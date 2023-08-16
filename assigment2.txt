@@ -1,0 +1,58 @@
+import java.util.*;
+
+class Song {
+    private String name;
+
+    public Song(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+
+class RecentlyPlayedStore {
+    private Map<String, LinkedList<Song>> userSongsMap;
+    private int capacity;
+
+    public RecentlyPlayedStore(int capacity) {
+        this.capacity = capacity;
+        userSongsMap = new HashMap<>();
+    }
+
+    public void playSong(String user, String songName) {
+        userSongsMap.putIfAbsent(user, new LinkedList<>());
+        LinkedList<Song> songs = userSongsMap.get(user);
+        
+        songs.removeIf(song -> song.getName().equals(songName)); // Remove if song was played earlier
+        
+        if (songs.size() >= capacity) {
+            songs.removeLast(); // Remove least recently played song
+        }
+        
+        songs.addFirst(new Song(songName)); // Add the new song to the beginning
+    }
+
+    public List<Song> getRecentlyPlayed(String user) {
+        return userSongsMap.getOrDefault(user, new LinkedList<>());
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        RecentlyPlayedStore store = new RecentlyPlayedStore(3);
+        
+        store.playSong("user1", "S1");
+        store.playSong("user1", "S2");
+        store.playSong("user1", "S3");
+        store.playSong("user1", "S4");
+        store.playSong("user1", "S2");
+        store.playSong("user1", "S1");
+        
+        List<Song> recentlyPlayed = store.getRecentlyPlayed("user1");
+        for (Song song : recentlyPlayed) {
+            System.out.println(song.getName());
+        }
+    }
+}
