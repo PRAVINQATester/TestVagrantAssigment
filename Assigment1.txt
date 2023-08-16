@@ -1,0 +1,98 @@
+import java.util.*;
+
+public class RecentlyPlayedSongsStore {
+
+    private static final int DEFAULT_CAPACITY = 3;
+
+    private Map<String, UserSongs> userSongsMap;
+    private int capacity;
+
+    public RecentlyPlayedSongsStore() {
+        this(DEFAULT_CAPACITY);
+    }
+
+    public RecentlyPlayedSongsStore(int capacity) {
+        this.capacity = capacity;
+        this.userSongsMap = new HashMap<>();
+    }
+
+    public void addSong(String song, String user) {
+        UserSongs userSongs = userSongsMap.get(user);
+        if (userSongs == null) {
+            userSongs = new UserSongs();
+            userSongsMap.put(user, userSongs);
+        }
+        userSongs.addSong(song);
+        if (userSongs.size() > capacity) {
+            userSongs.removeFirstSong();
+        }
+    }
+
+    public List<String> getRecentlyPlayedSongs(String user) {
+        UserSongs userSongs = userSongsMap.get(user);
+        if (userSongs == null) {
+            return new ArrayList<>();
+        }
+        return userSongs.getSongs();
+    }
+
+    private class UserSongs {
+
+        private List<String> songs;
+
+        public UserSongs() {
+            this.songs = new ArrayList<>();
+        }
+
+        public void addSong(String song) {
+            songs.add(song);
+        }
+
+        public void removeFirstSong() {
+            songs.remove(0);
+        }
+
+        public List<String> getSongs() {
+            return songs;
+        }
+
+        public int size() {
+            return songs.size();
+        }
+    }
+}
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class RecentlyPlayedSongsStoreTest {
+
+    @Test
+    public void testAddSong() {
+        RecentlyPlayedSongsStore store = new RecentlyPlayedSongsStore();
+        store.addSong("S1", "user1");
+        store.addSong("S2", "user1");
+        store.addSong("S3", "user1");
+        List<String> songs = store.getRecentlyPlayedSongs("user1");
+        assertEquals(3, songs.size());
+        assertEquals("S3", songs.get(0));
+        assertEquals("S2", songs.get(1));
+        assertEquals("S1", songs.get(2));
+    }
+
+    @Test
+    public void testRemoveLeastRecentlyPlayedSong() {
+        RecentlyPlayedSongsStore store = new RecentlyPlayedSongsStore();
+        store.addSong("S1", "user1");
+        store.addSong("S2", "user1");
+        store.addSong("S3", "user1");
+        store.addSong("S4", "user1");
+        List<String> songs = store.getRecentlyPlayedSongs("user1");
+        assertEquals(3, songs.size());
+        assertEquals("S4", songs.get(0));
+        assertEquals("S3", songs.get(1));
+        assertEquals("S2", songs.get(2));
+    }
+
+}
